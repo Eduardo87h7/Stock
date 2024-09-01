@@ -8,10 +8,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     exit();
 }
 
-// Obtener todos los usuarios de la base de datos
-$stmt = $pdo->query('SELECT * FROM usuarios');
-$users = $stmt->fetchAll();
-
 // Manejar el registro de nuevos usuarios
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['email'], $_POST['password'], $_POST['role'])) {
     $username = trim($_POST['username']);
@@ -52,6 +48,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['e
     echo json_encode(['error' => $error_message]);
     exit();
 }
+
+// Paginación
+$perPage = isset($_GET['perPage']) ? (int)$_GET['perPage'] : 10;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$offset = ($page - 1) * $perPage;
+
+// Obtener todos los usuarios de la base de datos
+$stmt = $pdo->prepare('SELECT * FROM usuarios LIMIT :limit OFFSET :offset');
+$stmt->bindValue(':limit', $perPage, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
+$users = $stmt->fetchAll();
+
+// Contar el total de usuarios para la paginación
+$totalStmt = $pdo->query('SELECT COUNT(*) FROM usuarios');
+$total = $totalStmt->fetchColumn();
+$totalPages = ceil($total / $perPage);
 ?>
 
 <!DOCTYPE html>
@@ -128,6 +141,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['e
         .pagination-container {
             margin-top: 10px;
             text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .pagination-container .page-item.disabled .page-link {
+            cursor: not-allowed;
+        }
+
+        .pagination-container .page-link {
+            color: #007bff;
+        }
+
+        .pagination-container .page-item.active .page-link {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
         }
 
         .btn-add-user {
@@ -218,9 +246,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['e
                                 <td><?php echo htmlspecialchars($user['email']); ?></td>
                                 <td><?php echo htmlspecialchars($user['role']); ?></td>
                                 <td>
-                                    <a href="edit_user.php?id=<?php echo $user['id']; ?>" class="btn btn-outline-warning btn-sm">
+                                    <button type="button" class="btn btn-outline-warning btn-sm btn-edit" data-id="<?php echo $user['id']; ?>" data-username="<?php echo htmlspecialchars($user['username']); ?>" data-email="<?php echo htmlspecialchars($user['email']); ?>" data-role="<?php echo htmlspecialchars($user['role']); ?>">
                                         <i class="bi bi-pencil"></i> Editar
-                                    </a>
+                                    </button>
                                     <a href="manage_users.php?delete_id=<?php echo $user['id']; ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('¿Estás seguro de que deseas eliminar este usuario?');">
                                         <i class="bi bi-trash"></i> Eliminar
                                     </a>
@@ -231,10 +259,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['e
                 </table>
             </div>
         </div>
-        <div class="pagination-container mt-3">
-            <nav>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <nav aria-label="Page navigation">
                 <ul class="pagination justify-content-center">
-                    <!-- Paginación generada dinámicamente -->
+                    <!-- Previous Button -->
+                    <li class="page-item <?php if ($page <= 1) echo 'disabled'; ?>">
+                        <a class="page-link" href="?page=<?php echo max(1, $page - 1); ?>&perPage=<?php echo $perPage; ?>" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+
+                    <!-- Page Numbers -->
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <li class="page-item <?php if ($i == $page) echo 'active'; ?>">
+                            <a class="page-link" href="?page=<?php echo $i; ?>&perPage=<?php echo $perPage; ?>"><?php echo $i; ?></a>
+                        </li>
+                    <?php endfor; ?>
+
+                    <!-- Next Button -->
+                    <li class="page-item <?php if ($page >= $totalPages) echo 'disabled'; ?>">
+                        <a class="page-link" href="?page=<?php echo min($totalPages, $page + 1); ?>&perPage=<?php echo $perPage; ?>" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
         </div>
@@ -272,8 +321,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['e
                             <option value="user">Usuario</option>
                         </select>
                     </div>
-                    <div id="error-message" class="alert alert-danger d-none"></div>
+                    <div id="errorMessage" class="alert alert-danger d-none"></div>
                     <button type="submit" class="btn btn-primary">Agregar Usuario</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Editing Users -->
+<div class="modal fade" id="editUserModal" tabindex="-1" role="dialog" aria-labelledby="editUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editUserModalLabel">Editar Usuario</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editUserForm">
+                    <input type="hidden" id="editUserId" name="id">
+                    <div class="form-group">
+                        <label for="editUsername">Nombre de Usuario</label>
+                        <input type="text" class="form-control" id="editUsername" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editEmail">Correo Electrónico</label>
+                        <input type="email" class="form-control" id="editEmail" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editRole">Rol</label>
+                        <select class="form-control" id="editRole" name="role" required>
+                            <option value="admin">Administrador</option>
+                            <option value="user">Usuario</option>
+                        </select>
+                    </div>
+                    <div id="editErrorMessage" class="alert alert-danger d-none"></div>
+                    <button type="submit" class="btn btn-primary">Actualizar Usuario</button>
                 </form>
             </div>
         </div>
@@ -282,33 +367,168 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['username'], $_POST['e
 
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('addUserForm');
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
-            const formData = new FormData(form);
-            fetch('manage_users.php', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                const errorMessage = document.getElementById('error-message');
-                if (data.error) {
-                    errorMessage.textContent = data.error;
-                    errorMessage.classList.remove('d-none');
-                } else {
-                    errorMessage.classList.add('d-none');
-                    form.reset();
-                    $('#addUserModal').modal('hide');
-                    location.reload(); // Recargar la página para actualizar la tabla
-                }
-            });
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle the add user form submission
+    const addForm = document.getElementById('addUserForm');
+    addForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(addForm);
+        fetch('manage_users.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            const errorMessage = document.getElementById('errorMessage');
+            if (data.error) {
+                errorMessage.textContent = data.error;
+                errorMessage.classList.remove('d-none');
+            } else {
+                errorMessage.classList.add('d-none');
+                $('#addUserModal').modal('hide');
+                location.reload(); // Recargar la página para actualizar la tabla
+            }
         });
     });
+
+    // Handle the edit button click
+    document.querySelectorAll('.btn-edit').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const username = this.getAttribute('data-username');
+            const email = this.getAttribute('data-email');
+            const role = this.getAttribute('data-role');
+
+            document.getElementById('editUserId').value = id;
+            document.getElementById('editUsername').value = username;
+            document.getElementById('editEmail').value = email;
+            document.getElementById('editRole').value = role;
+
+            $('#editUserModal').modal('show');
+        });
+    });
+
+    // Handle the edit user form submission
+    const editForm = document.getElementById('editUserForm');
+    editForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(editForm);
+        fetch('edit_user.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            const errorMessage = document.getElementById('editErrorMessage');
+            if (data.error) {
+                errorMessage.textContent = data.error;
+                errorMessage.classList.remove('d-none');
+            } else {
+                errorMessage.classList.add('d-none');
+                $('#editUserModal').modal('hide');
+                location.reload(); // Recargar la página para actualizar la tabla
+            }
+        });
+    });
+});
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle the add user form submission
+    const addForm = document.getElementById('addUserForm');
+    addForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(addForm);
+        fetch('manage_users.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            const errorMessage = document.getElementById('errorMessage');
+            if (data.error) {
+                errorMessage.textContent = data.error;
+                errorMessage.classList.remove('d-none');
+            } else {
+                errorMessage.classList.add('d-none');
+                $('#addUserModal').modal('hide');
+                location.reload(); // Recargar la página para actualizar la tabla
+            }
+        });
+    });
+
+    // Handle the edit button click
+    document.querySelectorAll('.btn-edit').forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            const username = this.getAttribute('data-username');
+            const email = this.getAttribute('data-email');
+            const role = this.getAttribute('data-role');
+
+            document.getElementById('editUserId').value = id;
+            document.getElementById('editUsername').value = username;
+            document.getElementById('editEmail').value = email;
+            document.getElementById('editRole').value = role;
+
+            $('#editUserModal').modal('show');
+        });
+    });
+
+    // Handle the edit user form submission
+    const editForm = document.getElementById('editUserForm');
+    editForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(editForm);
+        fetch('edit_user.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            const errorMessage = document.getElementById('editErrorMessage');
+            if (data.error) {
+                errorMessage.textContent = data.error;
+                errorMessage.classList.remove('d-none');
+            } else {
+                errorMessage.classList.add('d-none');
+                $('#editUserModal').modal('hide');
+                location.reload(); // Recargar la página para actualizar la tabla
+            }
+        });
+    });
+
+    // Handle the search input
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#userTable tbody tr');
+
+        rows.forEach(row => {
+            const username = row.cells[1].textContent.toLowerCase();
+            const email = row.cells[2].textContent.toLowerCase();
+
+            if (username.includes(searchTerm) || email.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Handle the entries count change
+    const entriesCount = document.getElementById('entriesCount');
+    entriesCount.addEventListener('change', function() {
+        const perPage = parseInt(this.value, 10);
+        const url = new URL(window.location.href);
+        url.searchParams.set('perPage', perPage);
+        window.location.href = url.toString();
+    });
+});
+</script>
+
 </body>
 </html>
+
