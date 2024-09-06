@@ -135,8 +135,8 @@ $products = $stmt->fetchAll();
                     <tr>
                         <th scope="col">ID</th>
                         <th scope="col">Nombre del Producto</th>
+                        <th scope="col">Modelo</th>
                         <th scope="col">Cantidad</th>
-                        <th scope="col">Precio</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
@@ -145,12 +145,16 @@ $products = $stmt->fetchAll();
                         <tr>
                             <td><?php echo htmlspecialchars($product['id']); ?></td>
                             <td><?php echo htmlspecialchars($product['product_name']); ?></td>
+                            <td><?php echo htmlspecialchars($product['model']); ?></td>
                             <td><?php echo htmlspecialchars($product['quantity']); ?></td>
-                            <td><?php echo htmlspecialchars($product['price']); ?></td>
                             <td>
-                                <a href="edit_product.php?id=<?php echo $product['id']; ?>" class="btn btn-outline-warning btn-sm">
+                                <button type="button" class="btn btn-outline-warning btn-sm edit-button" 
+                                        data-id="<?php echo $product['id']; ?>" 
+                                        data-name="<?php echo htmlspecialchars($product['product_name']); ?>" 
+                                        data-model="<?php echo htmlspecialchars($product['model']); ?>" 
+                                        data-quantity="<?php echo htmlspecialchars($product['quantity']); ?>">
                                     <i class="bi bi-pencil"></i> Editar
-                                </a>
+                                </button>
                                 <a href="delete_product.php?id=<?php echo $product['id']; ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('¿Estás seguro de que deseas eliminar este producto?');">
                                     <i class="bi bi-trash"></i> Eliminar
                                 </a>
@@ -188,12 +192,12 @@ $products = $stmt->fetchAll();
                         <input type="text" class="form-control" id="productName" name="product_name" required>
                     </div>
                     <div class="form-group">
-                        <label for="quantity">Cantidad</label>
-                        <input type="number" class="form-control" id="quantity" name="quantity" required>
+                        <label for="model">Modelo</label>
+                        <input type="text" class="form-control" id="model" name="model" required>
                     </div>
                     <div class="form-group">
-                        <label for="price">Precio</label>
-                        <input type="number" step="0.01" class="form-control" id="price" name="price" required>
+                        <label for="quantity">Cantidad</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -205,57 +209,62 @@ $products = $stmt->fetchAll();
     </div>
 </div>
 
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+<!-- Modal para editar producto -->
+<div class="modal fade" id="editProductModal" tabindex="-1" role="dialog" aria-labelledby="editProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProductModalLabel">Editar Producto</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="editProductForm" action="update_product.php" method="post">
+                <div class="modal-body">
+                    <input type="hidden" id="editProductId" name="id">
+                    <div class="form-group">
+                        <label for="editProductName">Nombre del Producto</label>
+                        <input type="text" class="form-control" id="editProductName" name="product_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editModel">Modelo</label>
+                        <input type="text" class="form-control" id="editModel" name="model" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editQuantity">Cantidad</label>
+                        <input type="number" class="form-control" id="editQuantity" name="quantity" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts de Bootstrap y jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
+<!-- Script para rellenar el modal de edición -->
 <script>
 $(document).ready(function () {
-    let currentPage = 1;
+    $('.edit-button').on('click', function () {
+        const id = $(this).data('id');
+        const name = $(this).data('name');
+        const model = $(this).data('model');
+        const quantity = $(this).data('quantity');
 
-    // Actualiza la tabla al buscar o cambiar el número de resultados por página
-    function updateTable() {
-        const searchTerm = $('#searchInput').val().toLowerCase();
-        const selectedRowsPerPage = parseInt($('#entriesCount').val());
-        let filteredRows = $('#productTable tbody tr').filter(function () {
-            return $(this).text().toLowerCase().includes(searchTerm);
-        });
+        $('#editProductId').val(id);
+        $('#editProductName').val(name);
+        $('#editModel').val(model);
+        $('#editQuantity').val(quantity);
 
-        // Ocultar todas las filas
-        $('#productTable tbody tr').hide();
-        filteredRows.slice((currentPage - 1) * selectedRowsPerPage, currentPage * selectedRowsPerPage).show();
-
-        // Actualizar la paginación
-        updatePagination(filteredRows.length, selectedRowsPerPage);
-    }
-
-    function updatePagination(totalRows, rowsPerPage) {
-        const totalPages = Math.ceil(totalRows / rowsPerPage);
-        const paginationContainer = $('.pagination');
-
-        paginationContainer.empty();
-
-        for (let i = 1; i <= totalPages; i++) {
-            paginationContainer.append(
-                `<li class="page-item${i === currentPage ? ' active' : ''}">
-                    <a class="page-link" href="#" data-page="${i}">${i}</a>
-                </li>`
-            );
-        }
-
-        $('.page-link').on('click', function (e) {
-            e.preventDefault();
-            currentPage = parseInt($(this).data('page'));
-            updateTable();
-        });
-    }
-
-    $('#searchInput').on('input', updateTable);
-    $('#entriesCount').on('change', updateTable);
-
-    // Inicializar la tabla
-    updateTable();
+        $('#editProductModal').modal('show');
+    });
 });
 </script>
 

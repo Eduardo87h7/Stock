@@ -8,29 +8,26 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Verificar si se enviaron datos del formulario
+// Agregar nuevo producto a la base de datos
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Validar y limpiar los datos del formulario
-    $product_name = isset($_POST['product_name']) ? trim($_POST['product_name']) : '';
-    $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 0;
-    $price = isset($_POST['price']) ? floatval($_POST['price']) : 0.00;
+    $product_name = $_POST['product_name'];
+    $model = $_POST['model'];
+    $quantity = $_POST['quantity'];
 
-    // Validar los datos (puedes agregar más validaciones según sea necesario)
-    if (!empty($product_name) && $quantity > 0 && $price > 0) {
-        // Preparar la consulta SQL para insertar el nuevo producto
-        $stmt = $pdo->prepare('INSERT INTO products (product_name, quantity, price) VALUES (?, ?, ?)');
-        $stmt->execute([$product_name, $quantity, $price]);
+    try {
+        // Preparar la consulta SQL sin incluir el campo 'id'
+        $sql = "INSERT INTO products (product_name, model, quantity) VALUES (:product_name, :model, :quantity)";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            ':product_name' => $product_name,
+            ':model' => $model,
+            ':quantity' => $quantity
+        ]);
 
-        // Redirigir a la página de gestión de productos con un mensaje de éxito
-        header('Location: manage_products.php?success=1');
-        exit();
-    } else {
-        // Redirigir a la página de gestión de productos con un mensaje de error
-        header('Location: manage_products.php?error=1');
-        exit();
+        // Redirigir a la página de gestión de productos después de la inserción
+        header('Location: manage_products.php');
+    } catch (PDOException $e) {
+        echo 'Error: ' . $e->getMessage();
     }
-} else {
-    // Redirigir a la página de gestión de productos si se accede al script de forma incorrecta
-    header('Location: manage_products.php');
-    exit();
 }
+?>

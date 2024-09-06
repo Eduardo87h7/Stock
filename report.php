@@ -44,6 +44,13 @@ try {
             </a>
         </div>
 
+        <!-- Botón Descargar Excel -->
+        <div class="mb-3">
+            <a href="export_to_excel.php" class="btn btn-success">
+                <i class="bi bi-file-earmark-excel"></i> Descargar Reporte en Excel
+            </a>
+        </div>
+
         <h2>Reportes y Estadísticas</h2>
         
         <h3>Inventario Actual</h3>
