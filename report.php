@@ -7,16 +7,24 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Obtener el inventario actual
-$stmt = $pdo->query('SELECT * FROM products');
-$inventory = $stmt->fetchAll();
+try {
+    // Obtener el inventario actual
+    $stmt = $pdo->query('SELECT * FROM products');
+    $inventory = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Obtener el historial de movimientos
-$stmt = $pdo->query('SELECT m.*, p.product_name, u.username FROM movements m
-JOIN products p ON m.product_id = p.id
-JOIN usuarios u ON m.user_id = u.id
-ORDER BY m.created_at DESC');
-$movements = $stmt->fetchAll();
+    // Obtener el historial de movimientos
+    $stmt = $pdo->query('
+        SELECT m.id, p.product_name, m.quantity, m.movement_type, u.username, m.movement_date
+        FROM movements m
+        JOIN products p ON m.product_id = p.id
+        JOIN usuarios u ON m.user_id = u.id
+        ORDER BY m.movement_date DESC
+    ');
+    $movements = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo 'Error en la consulta: ' . $e->getMessage();
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -29,6 +37,13 @@ $movements = $stmt->fetchAll();
 </head>
 <body>
     <div class="container mt-5">
+        <!-- Botón Regresar -->
+        <div class="mb-3">
+            <a href="manage_products.php" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Regresar
+            </a>
+        </div>
+
         <h2>Reportes y Estadísticas</h2>
         
         <h3>Inventario Actual</h3>
@@ -73,7 +88,7 @@ $movements = $stmt->fetchAll();
                         <td><?php echo htmlspecialchars($movement['quantity']); ?></td>
                         <td><?php echo htmlspecialchars($movement['movement_type']); ?></td>
                         <td><?php echo htmlspecialchars($movement['username']); ?></td>
-                        <td><?php echo htmlspecialchars($movement['created_at']); ?></td>
+                        <td><?php echo htmlspecialchars($movement['movement_date']); ?></td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

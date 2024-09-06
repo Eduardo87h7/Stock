@@ -104,6 +104,12 @@ $products = $stmt->fetchAll();
     <div class="table-container">
         <div class="table-header">
             <h2 class="mb-4">Gestión de Productos</h2>
+            <!-- Botón Agregar Producto -->
+            <div class="mb-3 text-right">
+                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addProductModal">
+                    <i class="bi bi-plus"></i> Agregar Producto
+                </button>
+            </div>
             <!-- Barra de Búsqueda -->
             <div class="row mb-3">
                 <div class="col-md-6">
@@ -165,6 +171,40 @@ $products = $stmt->fetchAll();
     </div>
 </div>
 
+<!-- Modal para agregar producto -->
+<div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-labelledby="addProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addProductModalLabel">Agregar Producto</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="add_product.php" method="post">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="productName">Nombre del Producto</label>
+                        <input type="text" class="form-control" id="productName" name="product_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Cantidad</label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Precio</label>
+                        <input type="number" step="0.01" class="form-control" id="price" name="price" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-primary">Agregar Producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
@@ -187,34 +227,37 @@ $(document).ready(function () {
         filteredRows.slice((currentPage - 1) * selectedRowsPerPage, currentPage * selectedRowsPerPage).show();
 
         // Actualizar la paginación
-        updatePagination(filteredRows.length);
+        updatePagination(filteredRows.length, selectedRowsPerPage);
     }
 
-    // Actualiza la paginación en función de los resultados filtrados
-    function updatePagination(filteredCount) {
-        const pages = Math.ceil(filteredCount / $('#entriesCount').val());
-        $('.pagination').empty();
+    function updatePagination(totalRows, rowsPerPage) {
+        const totalPages = Math.ceil(totalRows / rowsPerPage);
+        const paginationContainer = $('.pagination');
 
-        for (let i = 1; i <= pages; i++) {
-            $('.pagination').append(`<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#">${i}</a></li>`);
+        paginationContainer.empty();
+
+        for (let i = 1; i <= totalPages; i++) {
+            paginationContainer.append(
+                `<li class="page-item${i === currentPage ? ' active' : ''}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                </li>`
+            );
         }
+
+        $('.page-link').on('click', function (e) {
+            e.preventDefault();
+            currentPage = parseInt($(this).data('page'));
+            updateTable();
+        });
     }
 
-    // Maneja el evento de cambio en la selección de resultados por página y búsqueda
-    $('#searchInput, #entriesCount').on('input change', function () {
-        currentPage = 1;
-        updateTable();
-    });
+    $('#searchInput').on('input', updateTable);
+    $('#entriesCount').on('change', updateTable);
 
-    // Maneja el evento de clic en los enlaces de la paginación
-    $(document).on('click', '.page-link', function (e) {
-        e.preventDefault();
-        currentPage = parseInt($(this).text());
-        updateTable();
-    });
-
+    // Inicializar la tabla
     updateTable();
 });
 </script>
+
 </body>
 </html>

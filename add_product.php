@@ -8,62 +8,29 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Manejar la adición de un producto
+// Verificar si se enviaron datos del formulario
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nombre = $_POST['nombre'];
-    $descripcion = $_POST['descripcion'];
-    $cantidad = $_POST['cantidad'];
-    $precio = $_POST['precio'];
+    // Validar y limpiar los datos del formulario
+    $product_name = isset($_POST['product_name']) ? trim($_POST['product_name']) : '';
+    $quantity = isset($_POST['quantity']) ? intval($_POST['quantity']) : 0;
+    $price = isset($_POST['price']) ? floatval($_POST['price']) : 0.00;
 
-    try {
-        $stmt = $pdo->prepare('INSERT INTO productos (nombre, descripcion, cantidad, precio) VALUES (:nombre, :descripcion, :cantidad, :precio)');
-        $stmt->execute([
-            'nombre' => $nombre,
-            'descripcion' => $descripcion,
-            'cantidad' => $cantidad,
-            'precio' => $precio
-        ]);
-        header('Location: manage_products.php');
+    // Validar los datos (puedes agregar más validaciones según sea necesario)
+    if (!empty($product_name) && $quantity > 0 && $price > 0) {
+        // Preparar la consulta SQL para insertar el nuevo producto
+        $stmt = $pdo->prepare('INSERT INTO products (product_name, quantity, price) VALUES (?, ?, ?)');
+        $stmt->execute([$product_name, $quantity, $price]);
+
+        // Redirigir a la página de gestión de productos con un mensaje de éxito
+        header('Location: manage_products.php?success=1');
         exit();
-    } catch (Exception $e) {
-        $error_message = 'Error al agregar el producto: ' . $e->getMessage();
+    } else {
+        // Redirigir a la página de gestión de productos con un mensaje de error
+        header('Location: manage_products.php?error=1');
+        exit();
     }
+} else {
+    // Redirigir a la página de gestión de productos si se accede al script de forma incorrecta
+    header('Location: manage_products.php');
+    exit();
 }
-?>
-
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Agregar Producto</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
-<body>
-    <div class="container mt-5">
-        <h2>Agregar Producto</h2>
-        <?php if (isset($error_message)): ?>
-            <div class="alert alert-danger"><?php echo $error_message; ?></div>
-        <?php endif; ?>
-        <form method="post">
-            <div class="form-group">
-                <label for="nombre">Nombre del Producto</label>
-                <input type="text" class="form-control" id="nombre" name="nombre" required>
-            </div>
-            <div class="form-group">
-                <label for="descripcion">Descripción</label>
-                <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required></textarea>
-            </div>
-            <div class="form-group">
-                <label for="cantidad">Cantidad</label>
-                <input type="number" class="form-control" id="cantidad" name="cantidad" required>
-            </div>
-            <div class="form-group">
-                <label for="precio">Precio</label>
-                <input type="text" class="form-control" id="precio" name="precio" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Agregar Producto</button>
-        </form>
-    </div>
-</body>
-</html>

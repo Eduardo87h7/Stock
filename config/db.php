@@ -1,13 +1,14 @@
 <?php
 $host = 'localhost';
-$dbname = 'almacen';
-$username = 'postgres';
-$password = '123456';
+$db = 'almacen';
+$user = 'postgres';
+$pass = '123456';
 
 try {
-    $pdo = new PDO("pgsql:host=$host;dbname=$dbname", $username, $password);
+    $pdo = new PDO("pgsql:host=$host;dbname=$db", $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    die("Error en la conexión a la base de datos: " . $e->getMessage());
+    echo 'Error de conexión: ' . $e->getMessage();
+    exit();
 }
 ?>
