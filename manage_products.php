@@ -86,6 +86,20 @@ $products = $stmt->fetchAll();
             margin-top: 10px;
             text-align: center;
         }
+        /* Estilos para hacer las filas más delgadas */
+.table td, .table th {
+    padding: 5px; /* Reduce el espacio dentro de las celdas */
+}
+
+.table tbody tr {
+    height: 40px; /* Ajusta la altura de las filas según tus necesidades */
+}
+
+/* Opcional: Ajusta el tamaño de fuente para que se ajuste mejor */
+.table td, .table th {
+    font-size: 14px; /* Ajusta el tamaño de la fuente si es necesario */
+}
+
     </style>
 </head>
 <body>
@@ -135,8 +149,10 @@ $products = $stmt->fetchAll();
                     <tr>
                         <th scope="col">ID</th>
                         <th scope="col">Nombre del Producto</th>
+                        <th scope="col">Marca</th>
                         <th scope="col">Modelo</th>
                         <th scope="col">Cantidad</th>
+                        <th scope="col">Calidad</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
@@ -144,20 +160,25 @@ $products = $stmt->fetchAll();
                     <?php foreach ($products as $product): ?>
                         <tr>
                             <td><?php echo htmlspecialchars($product['id']); ?></td>
-                            <td><?php echo htmlspecialchars($product['product_name']); ?></td>
-                            <td><?php echo htmlspecialchars($product['model']); ?></td>
-                            <td><?php echo htmlspecialchars($product['quantity']); ?></td>
+                            <td><?php echo htmlspecialchars($product['nombre']); ?></td>
+                            <td><?php echo htmlspecialchars($product['marca']); ?></td>
+                            <td><?php echo htmlspecialchars($product['modelo']); ?></td>
+                            <td><?php echo htmlspecialchars($product['cantidad']); ?></td>
+                            <td><?php echo htmlspecialchars($product['calidad']); ?></td>
                             <td>
                                 <button type="button" class="btn btn-outline-warning btn-sm edit-button" 
                                         data-id="<?php echo $product['id']; ?>" 
-                                        data-name="<?php echo htmlspecialchars($product['product_name']); ?>" 
-                                        data-model="<?php echo htmlspecialchars($product['model']); ?>" 
-                                        data-quantity="<?php echo htmlspecialchars($product['quantity']); ?>">
-                                    <i class="bi bi-pencil"></i> Editar
+                                        data-nombre="<?php echo htmlspecialchars($product['nombre']); ?>" 
+                                        data-marca="<?php echo htmlspecialchars($product['marca']); ?>" 
+                                        data-modelo="<?php echo htmlspecialchars($product['modelo']); ?>" 
+                                        data-cantidad="<?php echo htmlspecialchars($product['cantidad']); ?>" 
+                                        data-calidad="<?php echo htmlspecialchars($product['calidad']); ?>">
+                                    Editar
                                 </button>
-                                <a href="delete_product.php?id=<?php echo $product['id']; ?>" class="btn btn-outline-danger btn-sm" onclick="return confirm('¿Estás seguro de que deseas eliminar este producto?');">
-                                    <i class="bi bi-trash"></i> Eliminar
-                                </a>
+                                <button type="button" class="btn btn-outline-danger btn-sm delete-button" 
+                                        data-id="<?php echo $product['id']; ?>">
+                                    Borrar
+                                </button>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -165,10 +186,11 @@ $products = $stmt->fetchAll();
             </table>
         </div>
 
-        <div class="pagination-container mt-3">
-            <nav>
-                <ul class="pagination justify-content-center">
-                    <!-- Paginación generada dinámicamente -->
+        <!-- Paginate -->
+        <div class="pagination-container">
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    <!-- Pagination items here -->
                 </ul>
             </nav>
         </div>
@@ -188,16 +210,24 @@ $products = $stmt->fetchAll();
             <form action="add_product.php" method="post">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="productName">Nombre del Producto</label>
-                        <input type="text" class="form-control" id="productName" name="product_name" required>
+                        <label for="nombre">Nombre del Producto</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
                     </div>
                     <div class="form-group">
-                        <label for="model">Modelo</label>
-                        <input type="text" class="form-control" id="model" name="model" required>
+                        <label for="marca">Marca</label>
+                        <input type="text" class="form-control" id="marca" name="marca" required>
                     </div>
                     <div class="form-group">
-                        <label for="quantity">Cantidad</label>
-                        <input type="number" class="form-control" id="quantity" name="quantity" required>
+                        <label for="modelo">Modelo</label>
+                        <input type="text" class="form-control" id="modelo" name="modelo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cantidad">Cantidad</label>
+                        <input type="number" class="form-control" id="cantidad" name="cantidad" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="calidad">Calidad</label>
+                        <input type="text" class="form-control" id="calidad" name="calidad" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -219,25 +249,33 @@ $products = $stmt->fetchAll();
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="editProductForm" action="update_product.php" method="post">
+            <form action="update_product.php" method="post">
+                <input type="hidden" id="edit_id" name="id">
                 <div class="modal-body">
-                    <input type="hidden" id="editProductId" name="id">
                     <div class="form-group">
-                        <label for="editProductName">Nombre del Producto</label>
-                        <input type="text" class="form-control" id="editProductName" name="product_name" required>
+                        <label for="edit_nombre">Nombre del Producto</label>
+                        <input type="text" class="form-control" id="edit_nombre" name="nombre" required>
                     </div>
                     <div class="form-group">
-                        <label for="editModel">Modelo</label>
-                        <input type="text" class="form-control" id="editModel" name="model" required>
+                        <label for="edit_marca">Marca</label>
+                        <input type="text" class="form-control" id="edit_marca" name="marca" required>
                     </div>
                     <div class="form-group">
-                        <label for="editQuantity">Cantidad</label>
-                        <input type="number" class="form-control" id="editQuantity" name="quantity" required>
+                        <label for="edit_modelo">Modelo</label>
+                        <input type="text" class="form-control" id="edit_modelo" name="modelo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_cantidad">Cantidad</label>
+                        <input type="number" class="form-control" id="edit_cantidad" name="cantidad" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_calidad">Calidad</label>
+                        <input type="text" class="form-control" id="edit_calidad" name="calidad" required>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    <button type="submit" class="btn btn-primary">Actualizar Producto</button>
                 </div>
             </form>
         </div>
@@ -246,27 +284,8 @@ $products = $stmt->fetchAll();
 
 <!-- Scripts de Bootstrap y jQuery -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-<!-- Script para rellenar el modal de edición -->
-<script>
-$(document).ready(function () {
-    $('.edit-button').on('click', function () {
-        const id = $(this).data('id');
-        const name = $(this).data('name');
-        const model = $(this).data('model');
-        const quantity = $(this).data('quantity');
-
-        $('#editProductId').val(id);
-        $('#editProductName').val(name);
-        $('#editModel').val(model);
-        $('#editQuantity').val(quantity);
-
-        $('#editProductModal').modal('show');
-    });
-});
-</script>
-
+<script src="custom.js"></script>
 </body>
 </html>

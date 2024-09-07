@@ -8,8 +8,9 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
-// Procesar el formulario de adición de producto
+// Procesar el formulario de edición de producto
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $id = $_POST['id'];
     $nombre = $_POST['nombre'];
     $marca = $_POST['marca'];
     $modelo = $_POST['modelo'];
@@ -17,8 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $calidad = $_POST['calidad'];
 
     try {
-        $stmt = $pdo->prepare('INSERT INTO products (nombre, marca, modelo, cantidad, calidad) VALUES (:nombre, :marca, :modelo, :cantidad, :calidad)');
+        $stmt = $pdo->prepare('UPDATE products SET nombre = :nombre, marca = :marca, modelo = :modelo, cantidad = :cantidad, calidad = :calidad WHERE id = :id');
         $stmt->execute([
+            ':id' => $id,
             ':nombre' => $nombre,
             ':marca' => $marca,
             ':modelo' => $modelo,
