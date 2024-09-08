@@ -99,6 +99,61 @@ $products = $stmt->fetchAll();
 .table td, .table th {
     font-size: 14px; /* Ajusta el tamaño de la fuente si es necesario */
 }
+/* Contenedor para el botón en la esquina superior derecha */
+.add-product-button-container {
+    position: fixed;
+    top: 20px; /* Ajusta según sea necesario */
+    right: 20px; /* Ajusta según sea necesario */
+    z-index: 1000; /* Asegura que el botón esté sobre otros elementos */
+}
+
+/* Estilo para el botón circular */
+.add-product-button {
+    width: 60px; /* Ajusta el tamaño del botón */
+    height: 60px; /* Ajusta el tamaño del botón */
+    border-radius: 50%; /* Hace el botón circular */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px; /* Ajusta el tamaño del ícono si es necesario */
+    padding: 0; /* Elimina el relleno */
+    border: none; /* Elimina el borde */
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Opcional: sombra para resaltar el botón */
+}
+
+.add-product-button i {
+    color: white; /* Color del ícono */
+}/* Estilo para la celda con un círculo de color */
+.quantity-high::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: green;
+    margin-right: 10px;
+}
+
+.quantity-medium::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: yellow;
+    margin-right: 10px;
+}
+
+.quantity-low::before {
+    content: '';
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: red;
+    margin-right: 10px;
+}
+
 
     </style>
 </head>
@@ -117,16 +172,17 @@ $products = $stmt->fetchAll();
 <div class="main-content">
     <div class="table-container">
         <div class="table-header">
-            <h2 class="mb-4">Gestión de Productos</h2>
-            <!-- Botón Agregar Producto -->
-            <div class="mb-3 text-right">
+            <div class="mb-0 text-right">
                 <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addProductModal">
                     <i class="bi bi-plus"></i> Agregar Producto
                 </button>
             </div>
+            <h2 class="mb-1">Gestión de Productos</h2>
+            <!-- Botón Agregar Producto -->
+            
             <!-- Barra de Búsqueda -->
-            <div class="row mb-3">
-                <div class="col-md-6">
+            <div class="row mb-2">
+                <div class="col-md-5">
                     <input type="text" id="searchInput" class="form-control" placeholder="Buscar producto...">
                 </div>
                 <div class="col-md-6 text-right">
@@ -152,36 +208,39 @@ $products = $stmt->fetchAll();
                         <th scope="col">Marca</th>
                         <th scope="col">Modelo</th>
                         <th scope="col">Cantidad</th>
-                        <th scope="col">Calidad</th>
+                        <th scope="col">Ubicación</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($products as $product): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($product['id']); ?></td>
-                            <td><?php echo htmlspecialchars($product['nombre']); ?></td>
-                            <td><?php echo htmlspecialchars($product['marca']); ?></td>
-                            <td><?php echo htmlspecialchars($product['modelo']); ?></td>
-                            <td><?php echo htmlspecialchars($product['cantidad']); ?></td>
-                            <td><?php echo htmlspecialchars($product['calidad']); ?></td>
-                            <td>
-                                <button type="button" class="btn btn-outline-warning btn-sm edit-button" 
-                                        data-id="<?php echo $product['id']; ?>" 
-                                        data-nombre="<?php echo htmlspecialchars($product['nombre']); ?>" 
-                                        data-marca="<?php echo htmlspecialchars($product['marca']); ?>" 
-                                        data-modelo="<?php echo htmlspecialchars($product['modelo']); ?>" 
-                                        data-cantidad="<?php echo htmlspecialchars($product['cantidad']); ?>" 
-                                        data-calidad="<?php echo htmlspecialchars($product['calidad']); ?>">
-                                    Editar
-                                </button>
-                                <button type="button" class="btn btn-outline-danger btn-sm delete-button" 
-                                        data-id="<?php echo $product['id']; ?>">
-                                    Borrar
-                                </button>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
+                <?php foreach ($products as $product): ?>
+    <tr>
+        <td><?php echo htmlspecialchars($product['id']); ?></td>
+        <td><?php echo htmlspecialchars($product['nombre']); ?></td>
+        <td><?php echo htmlspecialchars($product['marca']); ?></td>
+        <td><?php echo htmlspecialchars($product['modelo']); ?></td>
+        <td class="<?php echo ($product['cantidad'] >= 10) ? 'quantity-high' : (($product['cantidad'] >= 5) ? 'quantity-medium' : 'quantity-low'); ?>">
+            <?php echo htmlspecialchars($product['cantidad']); ?>
+        </td>
+        <td><?php echo htmlspecialchars($product['ubicacion']); ?></td>
+        <td>
+            <button type="button" class="btn btn-outline-warning btn-sm edit-button" 
+                    data-id="<?php echo $product['id']; ?>" 
+                    data-nombre="<?php echo htmlspecialchars($product['nombre']); ?>" 
+                    data-marca="<?php echo htmlspecialchars($product['marca']); ?>" 
+                    data-modelo="<?php echo htmlspecialchars($product['modelo']); ?>" 
+                    data-cantidad="<?php echo htmlspecialchars($product['cantidad']); ?>" 
+                    data-ubicacion="<?php echo htmlspecialchars($product['ubicacion']); ?>">
+                Editar
+            </button>
+            <button type="button" class="btn btn-outline-danger btn-sm delete-button" 
+                    data-id="<?php echo $product['id']; ?>">
+                Borrar
+            </button>
+        </td>
+    </tr>
+<?php endforeach; ?>
+
                 </tbody>
             </table>
         </div>
@@ -226,8 +285,8 @@ $products = $stmt->fetchAll();
                         <input type="number" class="form-control" id="cantidad" name="cantidad" required>
                     </div>
                     <div class="form-group">
-                        <label for="calidad">Calidad</label>
-                        <input type="text" class="form-control" id="calidad" name="calidad" required>
+                        <label for="ubicacion">Ubicación</label>
+                        <input type="text" class="form-control" id="ubicacion" name="ubicacion" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -269,8 +328,8 @@ $products = $stmt->fetchAll();
                         <input type="number" class="form-control" id="edit_cantidad" name="cantidad" required>
                     </div>
                     <div class="form-group">
-                        <label for="edit_calidad">Calidad</label>
-                        <input type="text" class="form-control" id="edit_calidad" name="calidad" required>
+                        <label for="edit_ubicacion">Ubicación</label>
+                        <input type="text" class="form-control" id="edit_ubicacion" name="ubicacion" required>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -282,7 +341,9 @@ $products = $stmt->fetchAll();
     </div>
 </div>
 
+
 <!-- Scripts de Bootstrap y jQuery -->
+<script src="./js/custom.js"></script>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

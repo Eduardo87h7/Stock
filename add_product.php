@@ -1,35 +1,35 @@
 <?php
-session_start();
 require 'config/db.php';
 
-// Verificar si el usuario está autenticado
-if (!isset($_SESSION['user_id'])) {
-    header('Location: login.php');
-    exit();
-}
+// Verificar si se han enviado datos por POST
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Obtener datos del formulario
+    $nombre = $_POST['nombre'] ?? '';
+    $marca = $_POST['marca'] ?? '';
+    $modelo = $_POST['modelo'] ?? '';
+    $cantidad = $_POST['cantidad'] ?? '';
+    $ubicacion = $_POST['ubicacion'] ?? '';
 
-// Procesar el formulario de adición de producto
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nombre = $_POST['nombre'];
-    $marca = $_POST['marca'];
-    $modelo = $_POST['modelo'];
-    $cantidad = $_POST['cantidad'];
-    $calidad = $_POST['calidad'];
-
-    try {
-        $stmt = $pdo->prepare('INSERT INTO products (nombre, marca, modelo, cantidad, calidad) VALUES (:nombre, :marca, :modelo, :cantidad, :calidad)');
+    // Validar los datos
+    if (!empty($nombre) && !empty($marca) && !empty($modelo) && !empty($cantidad) && !empty($ubicacion)) {
+        // Preparar la consulta SQL
+        $sql = "INSERT INTO products (nombre, marca, modelo, cantidad, ubicacion) VALUES (:nombre, :marca, :modelo, :cantidad, :ubicacion)";
+        
+        // Preparar y ejecutar la consulta
+        $stmt = $pdo->prepare($sql);
         $stmt->execute([
             ':nombre' => $nombre,
             ':marca' => $marca,
             ':modelo' => $modelo,
             ':cantidad' => $cantidad,
-            ':calidad' => $calidad,
+            ':ubicacion' => $ubicacion,
         ]);
 
+        // Redirigir a la página de gestión de productos
         header('Location: manage_products.php');
         exit();
-    } catch (PDOException $e) {
-        echo 'Error: ' . $e->getMessage();
+    } else {
+        echo "Todos los campos son obligatorios.";
     }
 }
 ?>

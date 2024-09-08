@@ -1,18 +1,34 @@
 <?php
+session_start();
 require 'config/db.php';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $id = intval($_POST['id']);
+// Verificar si el usuario está autenticado
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit();
+}
+
+// Verificar si se recibió el ID
+if (isset($_POST['id'])) {
+    $id = $_POST['id'];
     $nombre = $_POST['nombre'];
     $marca = $_POST['marca'];
     $modelo = $_POST['modelo'];
-    $cantidad = intval($_POST['cantidad']);
-    $calidad = $_POST['calidad'];
+    $cantidad = $_POST['cantidad'];
+    $ubicacion = $_POST['ubicacion']; // Cambiado de 'calidad' a 'ubicacion'
 
-    $stmt = $pdo->prepare('UPDATE products SET nombre = ?, marca = ?, modelo = ?, cantidad = ?, calidad = ? WHERE id = ?');
-    $stmt->execute([$nombre, $marca, $modelo, $cantidad, $calidad, $id]);
+    // Preparar la consulta SQL
+    $sql = 'UPDATE products SET nombre = ?, marca = ?, modelo = ?, cantidad = ?, ubicacion = ? WHERE id = ?';
+    $stmt = $pdo->prepare($sql);
 
-    header('Location: manage_products.php');
-    exit();
+    // Ejecutar la consulta
+    if ($stmt->execute([$nombre, $marca, $modelo, $cantidad, $ubicacion, $id])) {
+        header('Location: manage_products.php');
+        exit();
+    } else {
+        echo 'Error al actualizar el producto.';
+    }
+} else {
+    echo 'ID del producto no especificado.';
 }
 ?>
