@@ -8,6 +8,32 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $role = $_SESSION['role'];
+
+if ($role !== 'admin') {
+    // Si el usuario no es admin, muestra el mensaje y el botón de regreso
+    ?>
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Acceso Denegado</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    </head>
+    <body>
+        <div class="container mt-5">
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Acceso Denegado</h4>
+                <p>No tienes permisos de administrador para acceder a esta página.</p>
+                <hr>
+                <a href="index.php" class="btn btn-primary">Regresar al Panel de Control</a>
+            </div>
+        </div>
+    </body>
+    </html>
+    <?php
+    exit();
+}
 ?>
 
 <!DOCTYPE html>
@@ -37,7 +63,7 @@ $role = $_SESSION['role'];
             </ul>
         </div>
         <span class="navbar-text">
-            Bienvenido, <?php echo $_SESSION['username']; ?>
+            Bienvenido, <?php echo htmlspecialchars($_SESSION['username']); ?>
         </span>
     </nav>
 

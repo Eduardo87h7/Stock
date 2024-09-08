@@ -1,35 +1,33 @@
 <?php
+session_start();
 require 'config/db.php';
 
-// Verificar si se han enviado datos por POST
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Obtener datos del formulario
-    $nombre = $_POST['nombre'] ?? '';
-    $marca = $_POST['marca'] ?? '';
-    $modelo = $_POST['modelo'] ?? '';
-    $cantidad = $_POST['cantidad'] ?? '';
-    $ubicacion = $_POST['ubicacion'] ?? '';
+// Verificar si el usuario está autenticado
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit();
+}
 
-    // Validar los datos
-    if (!empty($nombre) && !empty($marca) && !empty($modelo) && !empty($cantidad) && !empty($ubicacion)) {
-        // Preparar la consulta SQL
-        $sql = "INSERT INTO products (nombre, marca, modelo, cantidad, ubicacion) VALUES (:nombre, :marca, :modelo, :cantidad, :ubicacion)";
-        
-        // Preparar y ejecutar la consulta
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            ':nombre' => $nombre,
-            ':marca' => $marca,
-            ':modelo' => $modelo,
-            ':cantidad' => $cantidad,
-            ':ubicacion' => $ubicacion,
-        ]);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nombre = $_POST['nombre'];
+    $marca = $_POST['marca'];
+    $modelo = $_POST['modelo'];
+    $cantidad = $_POST['cantidad'];
+    $ubicacion = $_POST['ubicacion'];
+    $user_id = $_SESSION['user_id']; // ID del usuario que realiza la acción
 
-        // Redirigir a la página de gestión de productos
-        header('Location: manage_products.php');
-        exit();
-    } else {
-        echo "Todos los campos son obligatorios.";
-    }
+    // Insertar el nuevo producto
+    $stmt = $pdo->prepare('INSERT INTO products (nombre, marca, modelo, cantidad, ubicacion) VALUES (?, ?, ?, ?, ?)');
+    $stmt->execute([$nombre, $marca, $modelo, $cantidad, $ubicacion]);
+
+    // Obtener el ID del nuevo producto
+    $product_id = $pdo->lastInsertId();
+
+    // Registrar la acción en la tabla de reportes
+    $stmt = $pdo->prepare('INSERT INTO reportes (usuario_id, producto_id, accion, fecha) VALUES (?, ?, ?, NOW())');
+    $stmt->execute([$user_id, $product_id, 'agregar']);
+
+    header('Location: manage_products.php');
+    exit();
 }
 ?>
