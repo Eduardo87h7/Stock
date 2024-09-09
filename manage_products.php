@@ -40,11 +40,7 @@ $products = $stmt->fetchAll();
 <div class="main-content">
     <div class="table-container">
         <div class="table-header">
-            <div class="mb-0 text-right">
-                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addProductModal">
-                    <i class="bi bi-plus"></i> Agregar Producto
-                </button>
-            </div>
+           
             <h2 class="mb-1">Gestión de Productos</h2>
             <!-- Botón Agregar Producto -->
             
@@ -63,6 +59,9 @@ $products = $stmt->fetchAll();
                     </select>
                     <span> resultados</span>
                 </div>
+                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addProductModal">
+                <i class="bi bi-file-earmark-plus"></i>
+                </button>
             </div>
         </div>
 
