@@ -1,0 +1,104 @@
+
+body {
+    overflow: hidden; /* Desactiva el scroll de la página */
+    display: flex;
+}
+
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #343a40;
+    padding-top: 20px;
+    z-index: 1000;
+}
+
+.sidebar a {
+    display: block;
+    color: #c2c7d0;
+    padding: 10px 20px;
+    text-decoration: none;
+}
+
+.sidebar a:hover {
+    background-color: #495057;
+    color: white;
+}
+
+.main-content {
+    margin-left: 250px; /* Ajusta según el ancho de la barra lateral */
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden; /* Evita que el contenido principal haga scroll */
+}
+
+.content-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Evita que el contenido haga scroll */
+    padding: 20px;
+}
+
+.table-container {
+    position: relative;
+    height: 400px; /* Ajusta la altura fija según tus necesidades */
+    overflow: hidden; /* Evita el cambio de tamaño del contenedor */
+}
+
+.table-wrapper {
+    height: 100%;
+    overflow: auto; /* Permite el scroll solo dentro de la tabla */
+}
+
+.table {
+    margin-bottom: 0; /* Asegura que no haya espacio extra debajo de la tabla */
+    width: 100%; /* Asegura que la tabla ocupe todo el ancho disponible */
+}
+
+.pagination-container {
+    margin-top: 10px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.pagination-container .page-item.disabled .page-link {
+    cursor: not-allowed;
+}
+
+.pagination-container .page-link {
+    color: #007bff;
+}
+
+.pagination-container .page-item.active .page-link {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+.btn-add-user {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: gray;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 20px;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-add-user:hover {
+    background-color: darkgray;
+    color: white;
+}
