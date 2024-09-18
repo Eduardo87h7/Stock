@@ -1,8 +1,8 @@
 <?php
-$host = 'localhost';
-$db = 'almacen';
+$host = 'postgres.railway.internal';
+$db = 'postgresql://postgres:ItnteXFdmBscliKLFyezyeWLntEdbDAZ@postgres.railway.internal:5432/railway';
 $user = 'postgres';
-$pass = '123456';
+$pass = 'ItnteXFdmBscliKLFyezyeWLntEdbDAZ';
 
 try {
     $pdo = new PDO("pgsql:host=$host;dbname=$db", $user, $pass);
