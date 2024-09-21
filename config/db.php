@@ -1,9 +1,9 @@
 <?php
 // Variables de entorno para Railway
-$host = getenv('postgres.railway.internal');
-$db = getenv('railway');
-$user = getenv('postgres');
-$pass = getenv('loGjAslKMQQGGzYpOPoUadWjLrLVfBPk');
+$host = getenv('DB_HOST');
+$db = getenv('DB_NAME');
+$user = getenv('DB_USER');
+$pass = getenv('DB_PASS');
 
 try {
     $pdo = new PDO("pgsql:host=$host;dbname=$db", $user, $pass);
