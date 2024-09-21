@@ -1,9 +1,9 @@
 <?php
-$host = getenv('DB_HOST');  // Obteniendo el host desde la variable de entorno
-$db = getenv('DB_NAME');    // Obteniendo el nombre de la base de datos
-$user = getenv('DB_USER');  // Obteniendo el usuario desde la variable de entorno
-$pass = getenv('DB_PASS');  // Obteniendo la contraseña desde la variable de entorno
-$port = getenv('DB_PORT') ?: '5432'; // Usando 5432 como puerto predeterminado si no se configura
+$host = getenv('PGHOST');  // Obteniendo el host desde la variable de entorno
+$db = getenv('PGDATABASE');    // Obteniendo el nombre de la base de datos
+$user = getenv('PGUSER');  // Obteniendo el usuario desde la variable de entorno
+$pass = getenv('PGPASSWORD');  // Obteniendo la contraseña desde la variable de entorno
+$port = getenv('PGPORT') ?: '5432'; // Usando 5432 como puerto predeterminado si no se configura
 
 try {
     $pdo = new PDO("pgsql:host=$host;port=$port;dbname=$db", $user, $pass);
