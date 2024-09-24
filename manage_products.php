@@ -25,30 +25,133 @@ $products = $stmt->fetchAll();
     <link rel="stylesheet" href="./css/products.css">
     
 </head>
-<body>
+<style>
+    @media (max-width: 768px) {
+    /* Reducir el tamaño de la fuente en dispositivos móviles */
+    .table {
+        font-size: 12px; /* Reduce el tamaño de la fuente de la tabla */
+    }
 
-<!-- Sidebar -->
-<div class="sidebar">
+    /* Ajustar las celdas para que no se desborden */
+    .table td, .table th {
+        white-space: nowrap;  /* Evita que el contenido se divida en varias líneas */
+        overflow: hidden;
+        text-overflow: ellipsis; /* Agrega "..." si el texto es demasiado largo */
+    }
+
+    /* Quitar padding innecesario */
+    .table th, .table td {
+        padding: 0.5rem;
+    }
+
+    /* Ajustar el contenedor de la tabla */
+    .table-responsive {
+        overflow-x: auto; /* Asegura que la tabla se pueda hacer scroll horizontal si es necesario */
+    }
+}
+@media (max-width: 768px) {
+    /* Estilos compactos para móviles */
+    .table td, .table th {
+        padding: 4px; /* Reducir el padding de las celdas */
+        font-size: 12px; /* Tamaño de fuente reducido */
+    }
+
+    /* Ajustar el ancho de las columnas */
+    .table th, .table td {
+        word-wrap: break-word; /* Permite que el texto se divida en varias líneas si es necesario */
+    }
+
+    /* Ajustar el tamaño de la tabla al 100% del contenedor */
+    .table-responsive {
+        max-width: 100%; /* Asegura que la tabla no se desborde horizontalmente */
+    }
+}
+
+    @media (max-width: 768px) {
+    /* Ocultar el sidebar y quitar su espacio */
+    .sidebar {
+        display: none;
+    }
+
+    /* Hacer que el contenido principal ocupe todo el ancho */
+    .main-content {
+        width: 100%;  /* Forzar a que ocupe todo el ancho */
+        margin-left: 0;  /* Quitar cualquier margen */
+        padding-left: 15px;  /* Ajustar padding a los lados para que no quede pegado */
+        padding-right: 15px;
+    }
+
+    /* Quitar padding o margen del contenedor de la tabla */
+    .table-container, .table-responsive {
+        padding: 0;
+        margin: 0;
+    }
+}
+
+</style>
+<style>
+    /* Header fijo en la parte superior */
+    @media (max-width: 768px) {
+        .mobile-header {
+            display: flex;
+            justify-content: space-around;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: #343a40;
+            z-index: 1000;
+            padding: 10px 0;
+        }
+
+        .mobile-header a {
+            color: #fff;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        /* Ajustar el espacio del contenido para que no quede detrás del header */
+        .main-content {
+            padding-top: 60px;
+        }
+    }
+</style>
+<body>
+    
+<!-- Header para móviles -->
+<div class="mobile-header d-md-none">
     <a href="manage_products.php"><i class="bi bi-box-seam"></i> Productos</a>
     <a href="manage_users.php"><i class="bi bi-people"></i> Usuarios</a>
     <a href="report.php"><i class="bi bi-graph-up"></i> Reportes</a>
     <a href="settings.php"><i class="bi bi-gear"></i> Configuración</a>
     <a href="logout.php"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</a>
 </div>
-
+<!-- Sidebar -->
+<div class="sidebar d-none d-md-block">
+    <a href="manage_products.php"><i class="bi bi-box-seam"></i> Productos</a>
+    <a href="manage_users.php"><i class="bi bi-people"></i> Usuarios</a>
+    <a href="report.php"><i class="bi bi-graph-up"></i> Reportes</a>
+    <a href="settings.php"><i class="bi bi-gear"></i> Configuración</a>
+    <a href="logout.php"><i class="bi bi-box-arrow-right"></i> Cerrar Sesión</a>
+</div>
 <!-- Main Content -->
 <div class="main-content">
     <div class="table-container">
         <div class="table-header">
-           
-            <h2 class="mb-1">Gestión de Productos</h2>
-            <!-- Botón Agregar Producto -->
-            
+        
+            <div class="d-flex justify-content-between align-items-center mb-2">
+    <h2 class="mb-1">Gestión de Productos</h2>
+    <!-- Botón Agregar Producto -->
+    <button type="button" class="btn btn-success ml-auto" data-toggle="modal" data-target="#addProductModal">
+        <i class="bi bi-file-earmark-plus"></i> 
+    </button>
+    
+</div>
             <!-- Barra de Búsqueda -->
             <div class="row mb-2">
                 <div class="col-md-5">
                     <input type="text" id="searchInput" class="form-control" placeholder="Buscar producto...">
                 </div>
+                 <!-- 
                 <div class="col-md-6 text-right">
                     <label for="entriesCount" class="mr-2">Mostrar</label>
                     <select id="entriesCount" class="custom-select w-auto">
@@ -62,24 +165,24 @@ $products = $stmt->fetchAll();
                 <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addProductModal">
                 <i class="bi bi-file-earmark-plus"></i>
                 </button>
+                -->
             </div>
         </div>
 
-        <!-- Tabla -->
         <div class="table-responsive">
-            <table class="table table-hover table-bordered" id="productTable">
-                <thead class="thead-dark">
-                    <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Nombre del Producto</th>
-                        <th scope="col">Marca</th>
-                        <th scope="col">Modelo</th>
-                        <th scope="col">Cantidad</th>
-                        <th scope="col">Ubicación</th>
-                        <th scope="col">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
+    <table class="table table-hover table-bordered" id="productTable">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Nombre del Producto</th>
+                <th scope="col">Marca</th>
+                <th scope="col">Modelo</th>
+                <th scope="col">Cantidad</th>
+                <th scope="col">Ubicación</th>
+                <th scope="col">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
                 <?php foreach ($products as $product): ?>
     <tr>
         <td><?php echo htmlspecialchars($product['id']); ?></td>
