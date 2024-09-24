@@ -1,18 +1,15 @@
 <?php
 session_start();
 require 'config/db.php';
-
 // Verificar si el usuario está autenticado
 if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit();
 }
-
 // Obtener todos los productos de la base de datos
 $stmt = $pdo->query('SELECT * FROM products');
 $products = $stmt->fetchAll();
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -23,8 +20,7 @@ $products = $stmt->fetchAll();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="custom.css">
     <link rel="stylesheet" href="./css/products.css">
-    <link rel="stylesheet" href="./css/productheader.css">
-    
+    <link rel="stylesheet" href="./css/productheader.css"> 
 </head>
 
 <body>
