@@ -78,6 +78,7 @@ $totalPages = ceil($total / $perPage);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="./css/user.css">
     <link rel="stylesheet" href="./css/userheader.css">
+    <link rel="shortcut icon" href="./img/icon.png" />
 </head>
 
 <body>

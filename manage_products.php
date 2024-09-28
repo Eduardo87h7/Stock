@@ -21,6 +21,7 @@ $products = $stmt->fetchAll();
     <link rel="stylesheet" href="custom.css">
     <link rel="stylesheet" href="./css/products.css">
     <link rel="stylesheet" href="./css/productheader.css"> 
+    <link rel="shortcut icon" href="./img/icon.png" />
 </head>
 
 <body>
