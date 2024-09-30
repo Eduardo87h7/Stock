@@ -110,9 +110,13 @@ $products = $stmt->fetchAll();
                     data-modelo="<?php echo htmlspecialchars($product['modelo']); ?>" 
                     data-cantidad="<?php echo htmlspecialchars($product['cantidad']); ?>" 
                     data-ubicacion="<?php echo htmlspecialchars($product['ubicacion']); ?>">
-                Editar
+                Editar 
             </button>
-            
+              <button type="button" class="btn btn-outline-danger btn-sm delete-button" 
+                    data-id="<?php echo $product['id']; ?>">
+                Borrar
+
+            </button>
         </td>
     </tr>
 <?php endforeach; ?>
